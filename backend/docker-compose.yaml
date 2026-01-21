@@ -1,0 +1,33 @@
+version: '3.8'
+services: 
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/mydatabase
+      KC_DB_USERNAME: admin
+      KC_DB_PASSWORD: password
+      KC_HOSTNAME: localhost
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    command: start-dev
+    volumes:
+      - ./keycloak-theme:/opt/keycloak/themes
+volumes:
+  postgres_data:

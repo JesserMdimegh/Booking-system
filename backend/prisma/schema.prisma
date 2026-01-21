@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Single table for all users (Single Table Inheritance pattern)
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  role          String   // CLIENT, PROVIDER, ADMIN
+  
+  // Client-specific fields
+  phoneNumber   String?
+  address       String?
+  
+  // Provider-specific fields
+  services      String[] // Array of service names
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  appointments  Appointment[] @relation("ClientAppointments")
+  slots         Slot[]        @relation("ProviderSlots")
+
+  @@index([role])
+  @@index([email])
+  @@map("users")
+}
+
+model Slot {
+  id          String       @id @default(uuid())
+  providerId  String
+  provider    User         @relation("ProviderSlots", fields: [providerId], references: [id], onDelete: Cascade)
+  
+  date        DateTime
+  startTime   DateTime
+  endTime     DateTime
+  status      String       @default("AVAILABLE") // AVAILABLE, BOOKED
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  appointments Appointment[]
+
+  @@index([providerId])
+  @@index([date])
+  @@index([startTime, endTime])
+  @@map("slots")
+}
+
+model Appointment {
+  id        String   @id @default(uuid())
+  clientId  String
+  client    User     @relation("ClientAppointments", fields: [clientId], references: [id], onDelete: Cascade)
+  
+  slotId    String
+  slot      Slot     @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  
+  status    String   @default("CONFIRMED") // CONFIRMED, CANCELLED, RESCHEDULED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([slotId])
+  @@index([clientId])
+  @@index([slotId])
+  @@map("appointments")
+}
