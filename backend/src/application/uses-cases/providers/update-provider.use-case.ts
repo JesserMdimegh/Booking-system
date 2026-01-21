@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Provider } from '../../../domain/entities/Provider.entity';
 import type { IProviderRepository } from '../../../domain/repositories/provider.repository';
 import { PROVIDER_REPOSITORY } from '../../../domain/repositories/provider.repository';
@@ -11,7 +11,7 @@ export class UpdateProviderUseCase {
   async execute(id: string, data: UpdateProviderDto): Promise<Provider> {
     const provider = await this.providerRepository.findById(id);
     if (!provider) {
-      throw new Error('Provider not found');
+      throw new NotFoundException('Provider not found');
     }
 
     if (data.name) provider.name = data.name;
@@ -21,5 +21,13 @@ export class UpdateProviderUseCase {
     provider.updatedAt = new Date();
 
     return await this.providerRepository.update(provider);
+  }
+
+  async delete(id: string): Promise<void> {
+    const provider = await this.providerRepository.findById(id);
+    if (!provider) {
+      throw new NotFoundException('Provider not found');
+    }
+    await this.providerRepository.delete(id);
   }
 }

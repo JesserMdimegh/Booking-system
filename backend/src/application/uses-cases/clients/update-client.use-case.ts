@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Client } from '../../../domain/entities/client.entity';
 import type { IClientRepository } from '../../../domain/repositories/client.repository';
 import { CLIENT_REPOSITORY } from '../../../domain/repositories/client.repository';
@@ -11,7 +11,7 @@ export class UpdateClientUseCase {
   async execute(id: string, data: UpdateClientDto): Promise<Client> {
     const client = await this.clientRepository.findById(id);
     if (!client) {
-      throw new Error('Client not found');
+      throw new NotFoundException('Client not found');
     }
 
     if (data.name) client.name = data.name;
@@ -20,5 +20,13 @@ export class UpdateClientUseCase {
     client.updatedAt = new Date();
 
     return await this.clientRepository.update(client);
+  }
+
+  async delete(id: string): Promise<void> {
+    const client = await this.clientRepository.findById(id);
+    if (!client) {
+      throw new NotFoundException('Client not found');
+    }
+    await this.clientRepository.delete(id);
   }
 }

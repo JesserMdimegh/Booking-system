@@ -16,6 +16,9 @@ export class Client extends User {
     this.phoneNumber = phoneNumber;
     this.address = address;
   }
+  create(id: string, email: string, name: string, phoneNumber?: string, address?: string): Client {
+    return new Client(id, email, name, phoneNumber, address);
+  }
 
   updateContactInfo(phoneNumber: string, address: string): void {
     this.phoneNumber = phoneNumber;

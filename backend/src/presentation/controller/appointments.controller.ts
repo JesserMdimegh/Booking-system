@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Body, Param, Query } from '@nestjs/common';
 import { CreateAppointmentDto } from '../../application/dto/create-appointment.dto';
 import { CreateAppointmentUseCase } from 'src/application/uses-cases/appointments/create-appointment.use-case';
 import { CancelAppointmentUseCase } from 'src/application/uses-cases/appointments/cancel-appointment.use-case';
@@ -16,7 +16,8 @@ export class AppointmentsController {
 
   @Post()
   async create(@Body() input: CreateAppointmentDto) {
-    return this.createAppointmentUseCase.execute(input);
+    const appointment = await this.createAppointmentUseCase.execute(input);
+    return { message: 'Appointment created successfully', data: appointment };
   }
 
   @Delete(':id')
@@ -26,14 +27,49 @@ export class AppointmentsController {
   }
   @Get()
   async getAll() {
-    try {
-      const appointments = await this.listAppointmentsUseCase.execute();
-      if (!appointments || appointments.length === 0) {
-        return { message: 'No appointments found', data: [] };
-      }
-      return { message: 'Appointments retrieved successfully', data: appointments };
-    } catch (error) {
-      throw new Error(`Failed to retrieve appointments: ${error.message}`);
+    const appointments = await this.listAppointmentsUseCase.execute();
+    if (!appointments || appointments.length === 0) {
+      return { message: 'No appointments found', data: [] };
     }
+    return { message: 'Appointments retrieved successfully', data: appointments };
+  }
+
+  @Get('client/:clientId')
+  async getAppointmentsByClient(@Param('clientId') clientId: string) {
+    const appointments = await this.listAppointmentsUseCase.executeByClientId(clientId);
+    if (!appointments || appointments.length === 0) {
+      return { message: 'No appointments found for this client', data: [] };
+    }
+    return { message: 'Appointments retrieved successfully', data: appointments };
+  }
+
+  @Get('provider/:providerId')
+  async getAppointmentsByProvider(@Param('providerId') providerId: string) {
+    const appointments = await this.listAppointmentsUseCase.executeByProviderId(providerId);
+    if (!appointments || appointments.length === 0) {
+      return { message: 'No appointments found for this provider', data: [] };
+    }
+    return { message: 'Appointments retrieved successfully', data: appointments };
+  }
+
+  @Get('date-range')
+  async getAppointmentsByDateRange(
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    const appointments = await this.listAppointmentsUseCase.executeByDateRange(
+      new Date(startDate),
+      new Date(endDate)
+    );
+    if (!appointments || appointments.length === 0) {
+      return { message: 'No appointments found in this date range', data: [] };
+    }
+    return { message: 'Appointments retrieved successfully', data: appointments };
+  }
+
+  @Get(':id')
+  async getAppointmentById(@Param('id') id: string) {
+    const appointment = await this.listAppointmentsUseCase.executeById(id);
+    return { message: 'Appointment retrieved successfully', data: appointment };
   }
 }

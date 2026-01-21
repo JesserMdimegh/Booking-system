@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import type { IAppointmentRepository } from '../../../domain/repositories/appointment.repository';
 import { APPOINTMENT_REPOSITORY } from '../../../domain/repositories/appointment.repository';
 import type { ISlotRepository } from '../../../domain/repositories/slot.repository';
@@ -15,11 +15,11 @@ export class CancelAppointmentUseCase {
     const appointment = await this.appointmentRepository.findById(appointmentId);
 
     if (!appointment) {
-      throw new Error('Appointment not found');
+      throw new NotFoundException('Appointment not found');
     }
 
     if (appointment.clientId !== clientId) {
-      throw new Error('Unauthorized to cancel this appointment');
+      throw new UnauthorizedException('Unauthorized to cancel this appointment');
     }
 
     appointment.cancel();

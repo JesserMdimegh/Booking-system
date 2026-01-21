@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { Slot } from '../../../domain/entities/slot.entity';
 import type { ISlotRepository } from '../../../domain/repositories/slot.repository';
 import { SLOT_REPOSITORY } from '../../../domain/repositories/slot.repository';
@@ -23,7 +23,7 @@ export class CreateSlotUseCase {
     );
 
     if (hasOverlap) {
-      throw new Error('Slot overlaps with an existing slot');
+      throw new BadRequestException('Slot overlaps with an existing slot');
     }
 
     const slot = new Slot(

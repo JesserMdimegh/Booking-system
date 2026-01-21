@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Appointment } from '../../../domain/entities/appointment.entity';
 import type { IAppointmentRepository } from '../../../domain/repositories/appointment.repository';
 import { APPOINTMENT_REPOSITORY } from '../../../domain/repositories/appointment.repository';
@@ -6,6 +6,8 @@ import type { ISlotRepository } from '../../../domain/repositories/slot.reposito
 import { SLOT_REPOSITORY } from '../../../domain/repositories/slot.repository';
 import { CreateAppointmentDto } from '../../dto/create-appointment.dto';
 import { v4 as uuid } from 'uuid';
+import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
+import { CLIENT_REPOSITORY } from 'src/domain/repositories/client.repository';
 
 @Injectable()
 export class CreateAppointmentUseCase {
@@ -18,13 +20,13 @@ export class CreateAppointmentUseCase {
     const slot = await this.slotRepository.findById(input.slotId);
 
     if (!slot) {
-      throw new Error('Slot not found');
+      throw new NotFoundException('Slot not found');
     }
 
     if (!slot.isAvailable()) {
-      throw new Error('Slot is not available');
+      throw new BadRequestException('Slot is not available');
     }
-    //get client id from token
+    //change this to get client id from token
     const appointment = new Appointment(uuid(), input.clientId, input.slotId);
     slot.book();
 

@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Appointment } from '../../../domain/entities/appointment.entity';
 import type { IAppointmentRepository } from '../../../domain/repositories/appointment.repository';
 import { APPOINTMENT_REPOSITORY } from '../../../domain/repositories/appointment.repository';
@@ -15,18 +15,30 @@ export class ListAppointmentsUseCase {
   ) {}
 
   async execute(): Promise<Appointment[]> {
+    const appointments = await this.appointmentRepository.getAll();
+    return appointments;
+  }
 
-    try{
-      const appointments = await this.appointmentRepository.getAll();
-      if (!appointments) {
-        throw new Error('No appointments found');
-      }
-      return appointments; 
-
-    } catch (error) {
-      throw error;
+  async executeById(id: string): Promise<Appointment> {
+    const appointment = await this.appointmentRepository.findById(id);
+    if (!appointment) {
+      throw new NotFoundException('Appointment not found');
     }
-       
+    return appointment;
+  }
 
+  async executeByClientId(clientId: string): Promise<Appointment[]> {
+    const appointments = await this.appointmentRepository.findByClientId(clientId);
+    return appointments;
+  }
+
+  async executeByProviderId(providerId: string): Promise<Appointment[]> {
+    const appointments = await this.appointmentRepository.findByProviderId(providerId);
+    return appointments;
+  }
+
+  async executeByDateRange(startDate: Date, endDate: Date): Promise<Appointment[]> {
+    const appointments = await this.appointmentRepository.findByDateRange(startDate, endDate);
+    return appointments;
   }
 }

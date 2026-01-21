@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, ConflictException } from '@nestjs/common';
 import { Provider } from '../../../domain/entities/Provider.entity';
 import type { IProviderRepository } from '../../../domain/repositories/provider.repository';
 import { PROVIDER_REPOSITORY } from '../../../domain/repositories/provider.repository';
@@ -12,7 +12,7 @@ export class CreateProviderUseCase {
   async execute(data: CreateProviderDto): Promise<Provider> {
     const existingProvider = await this.providerRepository.findByEmail(data.email);
     if (existingProvider) {
-      throw new Error('Provider with this email already exists');
+      throw new ConflictException('Provider with this email already exists');
     }
 
     const provider = new Provider(
