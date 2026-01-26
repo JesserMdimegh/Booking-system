@@ -66,7 +66,12 @@ export class KeycloakAdminService {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-
+      // Return user info including ID
+      return {
+        id: userId,
+        username: user.username,
+        email: user.email
+      };
 
     } catch (error) {
       console.error("Keycloak create user error:");

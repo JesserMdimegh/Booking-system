@@ -29,6 +29,9 @@ export class PrismaAppointmentRepository implements IAppointmentRepository {
   async findByClientId(clientId: string): Promise<Appointment[]> {
     const records = await this.prisma.appointment.findMany({
       where: { clientId },
+      include: {
+        slot: true
+      },
       orderBy: { createdAt: 'desc' },
     });
     return records.map((r) => this.toDomain(r));
@@ -95,10 +98,28 @@ export class PrismaAppointmentRepository implements IAppointmentRepository {
     appointment.status = record.status;
     appointment.createdAt = new Date(record.createdAt);
     appointment.updatedAt = new Date(record.updatedAt);
+    
+    // Attach slot data if available
+    if (record.slot) {
+      (appointment as any).slot = {
+        id: record.slot.id,
+        providerId: record.slot.providerId,
+        date: record.slot.date,
+        startTime: record.slot.startTime,
+        endTime: record.slot.endTime,
+        status: record.slot.status,
+        createdAt: record.slot.createdAt,
+        updatedAt: record.slot.updatedAt
+      };
+    }
+    
     return appointment;
   }
   async getAll(): Promise<Appointment[]> {
     const records = await this.prisma.appointment.findMany({
+      include: {
+        slot: true
+      },
       orderBy: { createdAt: 'desc' },
     });
     return records.map((r) => this.toDomain(r));

@@ -4,16 +4,20 @@ import { PassportModule } from '@nestjs/passport';
 import { KeycloakStrategy } from './keyclock.strategy';
 import { APP_GUARD } from '@nestjs/core';
 import { KeycloakAuthGuard } from './keyclock.guard';
+import { KeycloakSyncAuthGuard } from './keycloak-sync-auth.guard';
+import { ClientsModule } from '../../modules/clients.module';
+import { ProvidersModule } from '../../modules/providers.module';
 
 @Module({
-  imports: [PassportModule.register({ defaultStrategy: 'keycloak' })],
+  imports: [PassportModule.register({ defaultStrategy: 'keycloak' }), ClientsModule, ProvidersModule],
   providers: [
     KeycloakStrategy,
+    KeycloakSyncAuthGuard,
     {
       provide: APP_GUARD,
       useClass: KeycloakAuthGuard,
     },
   ],
-  exports: [PassportModule],
+  exports: [PassportModule, KeycloakSyncAuthGuard],
 })
 export class AuthModule {}

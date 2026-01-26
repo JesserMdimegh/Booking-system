@@ -90,7 +90,7 @@ export const useAppointmentsApi = () => {
     },
 
     // Create new appointment
-    createAppointment: async (appointmentData: { clientId: string; slotId: string }) => {
+    createAppointment: async (appointmentData: { slotId: string }) => {
       const response = await api.post<{ message: string; data: Appointment }>('/appointments', appointmentData);
       return response.data;
     },
@@ -110,9 +110,8 @@ export const useAppointmentsApi = () => {
         data: { clientId }
       });
 
-      // Then create a new appointment with the new slot
+      // Then create a new appointment with the new slot (clientId comes from JWT)
       const response = await api.post<{ message: string; data: Appointment }>('/appointments', {
-        clientId,
         slotId: newSlotId
       });
 

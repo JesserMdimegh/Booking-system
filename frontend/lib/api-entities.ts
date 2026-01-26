@@ -89,6 +89,12 @@ export const useClientsApi = () => {
       return response.data;
     },
 
+    // Get clients by provider
+    getClientsByProvider: async (providerId: string) => {
+      const response = await api.get<{ message: string; data: Client[] }>(`/clients/provider/${providerId}`);
+      return response.data;
+    },
+
     // Create new client
     createClient: async (clientData: Omit<Client, 'id' | 'createdAt' | 'updatedAt'>) => {
       const response = await api.post<{ message: string; data: Client }>('/clients', clientData);

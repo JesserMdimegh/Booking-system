@@ -36,4 +36,12 @@ export class GetClientsUseCase {
     // For now, return empty array as placeholder
     return [];
   }
+
+  async findByProvider(providerId: string): Promise<Client[]> {
+    if (!providerId) {
+      throw new NotFoundException('Provider ID is required');
+    }
+    
+    return await this.clientRepository.findByProvider(providerId);
+  }
 }

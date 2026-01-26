@@ -6,6 +6,7 @@ import { PrismaClientRepository } from '../infrastructure/repositories/prisma-cl
 import { CreateClientUseCase } from '../application/uses-cases/clients/create-client.use-case';
 import { GetClientsUseCase } from '../application/uses-cases/clients/get-clients.use-case';
 import { UpdateClientUseCase } from '../application/uses-cases/clients/update-client.use-case';
+import { SyncClientFromKeycloakUseCase } from '../application/uses-cases/clients/sync-client-from-keycloak.use-case';
 
 @Module({
   imports: [PrismaModule],
@@ -17,8 +18,9 @@ import { UpdateClientUseCase } from '../application/uses-cases/clients/update-cl
     CreateClientUseCase,
     GetClientsUseCase,
     UpdateClientUseCase,
+    SyncClientFromKeycloakUseCase,
   ],
   controllers: [ClientsController],
-  exports: [CLIENT_REPOSITORY],
+  exports: [CLIENT_REPOSITORY, SyncClientFromKeycloakUseCase],
 })
 export class ClientsModule {}

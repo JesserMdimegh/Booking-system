@@ -49,6 +49,21 @@ export class ClientsController {
     return { message: 'Client appointments retrieved successfully', data: appointments };
   }
 
+  @Get('provider/:providerId')
+  async getClientsByProvider(@Param('providerId') providerId: string) {
+    const clients = await this.getClientsUseCase.findByProvider(providerId);
+    if (!clients || clients.length === 0) {
+      return { message: 'No clients found for this provider', data: [] };
+    }
+    return { message: 'Clients retrieved successfully', data: clients };
+  }
+
+  @Put(':id')
+  async updateClient(@Param('id') id: string, @Body() data: UpdateClientDto) {
+    const client = await this.updateClientUseCase.execute(id, data);
+    return { message: 'Client updated successfully', data: client };
+  }
+
   @Delete(':id')
   async deleteClient(@Param('id') id: string) {
     await this.updateClientUseCase.delete(id);

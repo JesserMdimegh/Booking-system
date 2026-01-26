@@ -75,11 +75,12 @@ export default function RegisterPage() {
       setError(null);
       setSuccess(null);
 
-      // Step 1: Create user in Keycloak
+      // Step 1: Create user in Keycloak and sync to local database
       const createUserResponse = await api.post('/keycloak/users', {
         email: formData.email,
         username: formData.username,
         password: formData.password,
+        userType: formData.userType,
         ...(formData.userType === 'provider' && { services: formData.services })
       });
 

@@ -50,6 +50,24 @@ export class PrismaClientRepository implements IClientRepository {
     return records.map((r) => this.toDomain(r));
   }
 
+  async findByProvider(providerId: string): Promise<Client[]> {
+    const records = await this.prisma.user.findMany({
+      where: { 
+        role: 'CLIENT',
+        appointments: {
+          some: {
+            slot: {
+              providerId: providerId
+            }
+          }
+        }
+      },
+      include: { appointments: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return records.map((r) => this.toDomain(r));
+  }
+
   async update(client: Client): Promise<Client> {
     const updated = await this.prisma.user.update({
       where: { id: client.id },

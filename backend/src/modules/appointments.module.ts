@@ -5,11 +5,13 @@ import { CreateAppointmentUseCase } from 'src/application/uses-cases/appointment
 import { CancelAppointmentUseCase } from 'src/application/uses-cases/appointments/cancel-appointment.use-case';
 import { AppointmentsController } from 'src/presentation/controller/appointments.controller';
 import { SlotsModule } from './slots.module';
+import { ClientsModule } from './clients.module';
+import { ProvidersModule } from './providers.module';
 import { PrismaModule } from 'src/shared/infrastructure/prisma.module';
 import { ListAppointmentsUseCase } from 'src/application/uses-cases/appointments/list-appointments.use-case';
 
 @Module({
-  imports: [PrismaModule, SlotsModule],
+  imports: [PrismaModule, SlotsModule, ClientsModule, ProvidersModule],
   providers: [
     {
       provide: APPOINTMENT_REPOSITORY,

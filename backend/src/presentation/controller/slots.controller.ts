@@ -3,8 +3,10 @@ import { CreateSlotDto } from '../../application/dto/create-slot.dto';
 import { UpdateSlotDto } from '../../application/dto/update-slot.dto';
 import { CreateSlotUseCase } from 'src/application/uses-cases/slots/create-slot.use-case';
 import { GetSlotsUseCase } from 'src/application/uses-cases/slots/get-slots.use-case';
+import { Public } from 'src/infrastructure/auth/public.decorator';
 
 @Controller('slots')
+@Public()
 export class SlotsController {
   constructor(
     private createSlotUseCase: CreateSlotUseCase,
