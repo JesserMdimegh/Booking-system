@@ -259,6 +259,86 @@ CMD ["node", "dist/main"]
 4. Push vers la branche (`git push origin feature/amazing-feature`)
 5. Ouvrir une Pull Request
 
+## SSO ( Google )
+---
+
+## 🟢 STEP 1 — Create Google OAuth Credentials
+
+### 1️⃣ Open Google Cloud Console
+👉 https://console.cloud.google.com/
+
+### 2️⃣ Create a New Project
+- **Project name**: Booking-System-SSO
+- Select the project
+
+### 3️⃣ Configure OAuth Consent Screen
+📍 **APIs & Services → OAuth consent screen**
+
+Choose:
+- **External**
+
+Fill:
+- **App name**: Booking System
+- **User support email**
+- **Developer email**
+
+**Scopes**:
+- `email`
+- `profile` 
+- `openid`
+
+Save & continue.
+
+### 4️⃣ Create OAuth Client ID
+📍 **APIs & Services → Credentials → Create credentials → OAuth Client ID**
+
+Choose:
+- **Web application**
+
+**Authorized redirect URI**:
+```
+http://localhost:8080/realms/booking-realm/broker/google/endpoint
+```
+
+📌 **IMPORTANT**: Replace `booking-realm` with your actual realm name
+
+**Save**:
+- Client ID
+- Client Secret
+
+---
+
+## 🟢 STEP 2 — Configure Google Identity Provider in Keycloak
+
+### 1️⃣ Open Keycloak Admin Console
+```
+http://localhost:8080/admin
+```
+Login as admin.
+
+### 2️⃣ Select Your Realm
+Example: `booking-realm`
+
+### 3️⃣ Add Google as Identity Provider
+📍 **Identity Providers → Add provider → Google**
+
+Fill:
+- **Client ID** → from Google
+- **Client Secret** → from Google
+
+**Default Scopes**:
+```
+openid email profile
+```
+
+**Enable**:
+- ✅ **Trust Email**
+- ✅ **Store Tokens**
+- ❌ **Hide On Login Page** (keep visible)
+
+
+
+
 ## Licence
 
 Ce projet est sous licence UNLICENSED.
