@@ -150,5 +150,14 @@ export const useUsersApi = () => {
       
       throw new Error('Invalid user role');
     },
+
+    // Assign role to user via Keycloak
+    assignRole: async (username: string, roleName: string) => {
+      const response = await api.post<{ message: string }>('/keycloak/assign-role', {
+        username,
+        roleName
+      });
+      return response.data;
+    },
   };
 };
