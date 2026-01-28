@@ -3,3 +3,5 @@ google-chrome-stable_current_amd64.deb
 node_modules/
 dist/
 coverage/
+ARCHITECTURE_REFINEMENT.md
+DEVELOPMENT_JOURNEY.md
