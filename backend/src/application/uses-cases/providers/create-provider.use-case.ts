@@ -9,7 +9,7 @@ import { v4 as uuid } from 'uuid';
 export class CreateProviderUseCase {
   constructor(@Inject(PROVIDER_REPOSITORY) private providerRepository: IProviderRepository) {}
 
-  async execute(data: CreateProviderDto): Promise<Provider> {
+  async execute(data: CreateProviderDto, keycloakUserId: string): Promise<Provider> {
     const existingProvider = await this.providerRepository.findByEmail(data.email);
     if (existingProvider) {
       throw new ConflictException('Provider with this email already exists');
@@ -17,9 +17,12 @@ export class CreateProviderUseCase {
 
     const provider = new Provider(
       uuid(),
+      keycloakUserId, // Use provided keycloakUserId
       data.email,
       data.name,
-      data.services || []
+      data.services || [],
+      data.phoneNumber || undefined,
+      data.address || undefined
     );
 
     return await this.providerRepository.create(provider);

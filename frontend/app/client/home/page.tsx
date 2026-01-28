@@ -49,8 +49,8 @@ export default function ClientHomePage() {
         throw new Error('User session data is incomplete');
       }
 
-      // Get client data by email to get the correct database ID
-      const clientResponse = await clientsApi.getClientByEmail(session.user.email || '');
+      // Use JWT-based profile endpoint instead of email lookup
+      const clientResponse = await clientsApi.getProfile();
       
       if (clientResponse.data.id) {
         // Fetch client's appointments and available providers

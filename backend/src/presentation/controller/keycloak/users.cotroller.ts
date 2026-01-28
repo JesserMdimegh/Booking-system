@@ -34,6 +34,7 @@ export class UsersController {
         if (body.userType === 'client') {
           await this.syncClientUseCase.execute({
             id: keycloakUser.id,
+            keycloakUserId: keycloakUser.id,
             email: keycloakUser.email,
             name: body.username,
             phoneNumber: undefined,
@@ -43,6 +44,7 @@ export class UsersController {
         } else if (body.userType === 'provider') {
           await this.syncProviderUseCase.execute({
             id: keycloakUser.id,
+            keycloakUserId: keycloakUser.id,
             email: keycloakUser.email,
             name: body.username,
             services: body.services || []

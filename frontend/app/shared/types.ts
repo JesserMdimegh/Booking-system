@@ -1,14 +1,31 @@
 // Define TypeScript interfaces for type safety
-export interface Provider {
+
+// Business entity types (from PostgreSQL)
+export interface Client {
   id: string;
+  keycloakUserId: string; // 🔗 Bridge to Keycloak
   email: string;
   name: string;
-  role: 'PROVIDER';
-  services: string[];
+  phoneNumber?: string;
+  address?: string;
   createdAt: string;
   updatedAt: string;
 }
 
+export interface Provider {
+  id: string;
+  keycloakUserId: string; // 🔗 Bridge to Keycloak
+  email: string;
+  name: string;
+  companyName?: string;
+  services: string[];
+  phoneNumber?: string;
+  address?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Legacy User interface for backward compatibility
 export interface User {
   id: string;
   email: string;
@@ -21,16 +38,11 @@ export interface User {
   updatedAt: string;
 }
 
-export interface Client extends User {
-  role: 'CLIENT';
-  phoneNumber?: string;
-  address?: string;
-}
-
+// Business logic entities
 export interface Slot {
   id: string;
   providerId: string;
-  provider?: User;
+  provider?: Provider;
   date: string;
   startTime: string;
   endTime: string;
@@ -43,14 +55,16 @@ export interface Slot {
 export interface Appointment {
   id: string;
   clientId: string;
-  client?: User;
+  client?: Client;
   slotId: string;
   slot?: Slot;
   status: 'CONFIRMED' | 'CANCELLED' | 'RESCHEDULED';
+  notes?: string;
   createdAt: string;
   updatedAt: string;
 }
 
+// API response types
 export interface ApiResponse<T> {
   message: string;
   data: T;
@@ -66,6 +80,7 @@ export interface PaginatedResponse<T> {
   };
 }
 
+// Dashboard statistics
 export interface DashboardStats {
   totalAppointments: number;
   upcomingAppointments: number;
@@ -84,6 +99,7 @@ export interface ClientDashboardStats extends DashboardStats {
   bookingsThisMonth: number;
 }
 
+// Filter interfaces
 export interface SlotFilters {
   providerId?: string;
   date?: string;
@@ -98,6 +114,7 @@ export interface AppointmentFilters {
   providerId?: string;
 }
 
+// Form interfaces (for legacy endpoints)
 export interface LoginForm {
   email: string;
   password: string;
@@ -119,6 +136,23 @@ export interface SlotForm {
   endTime: string;
 }
 
+// Keycloak integration types
+export interface KeycloakUser {
+  sub: string; // Keycloak user ID
+  email: string;
+  name?: string;
+  preferred_username?: string;
+  roles: string[];
+  email_verified: boolean;
+  enabled: boolean;
+}
+
+export interface RoleAssignmentRequest {
+  username: string;
+  roleName: 'Client' | 'Provider';
+}
+
+// NextAuth types
 import NextAuth, { DefaultSession } from "next-auth";
 import { DefaultJWT } from "next-auth/jwt";
 
@@ -152,5 +186,6 @@ declare module "next-auth/jwt" {
     refreshToken?: string;
     roles?: string[];
     clientRoles?: string[];
+    sub?: string; // Keycloak user ID
   }
 }

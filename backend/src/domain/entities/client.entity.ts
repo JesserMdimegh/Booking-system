@@ -7,17 +7,19 @@ export class Client extends User {
 
   constructor(
     id: string,
+    keycloakUserId: string,
     email: string,
     name: string,
     phoneNumber?: string,
     address?: string,
   ) {
-    super(id, email, name, UserRole.CLIENT);
+    super(id, keycloakUserId, email, name);
     this.phoneNumber = phoneNumber;
     this.address = address;
   }
-  create(id: string, email: string, name: string, phoneNumber?: string, address?: string): Client {
-    return new Client(id, email, name, phoneNumber, address);
+
+  create(id: string, keycloakUserId: string, email: string, name: string, phoneNumber?: string, address?: string): Client {
+    return new Client(id, keycloakUserId, email, name, phoneNumber, address);
   }
 
   updateContactInfo(phoneNumber: string, address: string): void {

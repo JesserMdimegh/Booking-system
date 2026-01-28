@@ -5,6 +5,7 @@ import { CLIENT_REPOSITORY } from '../../../domain/repositories/client.repositor
 
 export interface SyncClientFromKeycloakDto {
   id: string;
+  keycloakUserId: string;
   email: string;
   name: string;
   phoneNumber?: string;
@@ -32,10 +33,11 @@ export class SyncClientFromKeycloakUseCase {
       // Create new client
       client = new Client(
         data.id,
+        data.keycloakUserId,
         data.email,
         data.name,
-        data.phoneNumber,
-        data.address
+        data.phoneNumber || undefined,
+        data.address || undefined
       );
       
       return await this.clientRepository.create(client);

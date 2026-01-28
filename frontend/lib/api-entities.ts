@@ -1,5 +1,5 @@
 import { useApi } from './api-service';
-import { Provider, Client, User } from '@/app/shared/types';
+import { Provider, Client, User, RoleAssignmentRequest } from '@/app/shared/types';
 
 export const useProvidersApi = () => {
   const api = useApi();
@@ -58,6 +58,30 @@ export const useProvidersApi = () => {
       const response = await api.delete<{ message: string }>(`/providers/${id}`);
       return response.data;
     },
+
+    // NEW: Get current provider profile (JWT-based)
+    getProfile: async () => {
+      const response = await api.get<{ message: string; data: Provider }>('/providers/profile');
+      return response.data;
+    },
+
+    // NEW: Update current provider profile (JWT-based)
+    updateProfile: async (providerData: Partial<Provider>) => {
+      const response = await api.put<{ message: string; data: Provider }>('/providers/profile', providerData);
+      return response.data;
+    },
+
+    // NEW: Add service to provider profile
+    addService: async (service: string) => {
+      const response = await api.post<{ message: string; data: Provider }>('/providers/profile/services', { service });
+      return response.data;
+    },
+
+    // NEW: Remove service from provider profile
+    removeService: async (service: string) => {
+      const response = await api.delete<{ message: string; data: Provider }>(`/providers/profile/services/${service}`);
+      return response.data;
+    },
   };
 };
 
@@ -89,12 +113,6 @@ export const useClientsApi = () => {
       return response.data;
     },
 
-    // Get clients by provider
-    getClientsByProvider: async (providerId: string) => {
-      const response = await api.get<{ message: string; data: Client[] }>(`/clients/provider/${providerId}`);
-      return response.data;
-    },
-
     // Create new client
     createClient: async (clientData: Omit<Client, 'id' | 'createdAt' | 'updatedAt'>) => {
       const response = await api.post<{ message: string; data: Client }>('/clients', clientData);
@@ -110,6 +128,18 @@ export const useClientsApi = () => {
     // Delete client
     deleteClient: async (id: string) => {
       const response = await api.delete<{ message: string }>(`/clients/${id}`);
+      return response.data;
+    },
+
+    // NEW: Get current client profile (JWT-based)
+    getProfile: async () => {
+      const response = await api.get<{ message: string; data: Client }>('/clients/profile');
+      return response.data;
+    },
+
+    // NEW: Update current client profile (JWT-based)
+    updateProfile: async (clientData: Partial<Client>) => {
+      const response = await api.put<{ message: string; data: Client }>('/clients/profile', clientData);
       return response.data;
     },
   };
@@ -151,10 +181,36 @@ export const useUsersApi = () => {
       throw new Error('Invalid user role');
     },
 
-    // Assign role to user via Keycloak
-    assignRole: async (username: string, roleName: string) => {
-      const response = await api.post<{ message: string }>('/keycloak/assign-role', {
+    // Assign role to user via Keycloak with profile creation
+    assignRole: async (username: string, roleName: 'Client' | 'Provider') => {
+      const response = await api.post<{ message: string; data: any }>('/keycloak/assign-role', {
         username,
+        roleName
+      });
+      return response.data;
+    },
+  };
+};
+
+export const useKeycloakApi = () => {
+  const api = useApi();
+
+  return {
+    // Get all users from Keycloak
+    getUsers: async () => {
+      const response = await api.get<{ message: string; data: any[] }>('/keycloak/users');
+      return response.data;
+    },
+
+    // Get roles from Keycloak
+    getRoles: async () => {
+      const response = await api.get<{ message: string; data: any[] }>('/keycloak/roles');
+      return response.data;
+    },
+
+    // Create role in Keycloak
+    createRole: async (roleName: string) => {
+      const response = await api.post<{ message: string; data: any }>('/keycloak/roles', {
         roleName
       });
       return response.data;

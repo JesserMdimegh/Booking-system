@@ -7,9 +7,11 @@ import { CreateClientUseCase } from '../application/uses-cases/clients/create-cl
 import { GetClientsUseCase } from '../application/uses-cases/clients/get-clients.use-case';
 import { UpdateClientUseCase } from '../application/uses-cases/clients/update-client.use-case';
 import { SyncClientFromKeycloakUseCase } from '../application/uses-cases/clients/sync-client-from-keycloak.use-case';
+import { KeycloakSyncClientAuthGuard } from '../infrastructure/auth/keycloak-sync-client-auth.guard';
+import { AuthModule } from '../infrastructure/auth/auth.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, AuthModule],
   providers: [
     {
       provide: CLIENT_REPOSITORY,
@@ -19,6 +21,7 @@ import { SyncClientFromKeycloakUseCase } from '../application/uses-cases/clients
     GetClientsUseCase,
     UpdateClientUseCase,
     SyncClientFromKeycloakUseCase,
+    KeycloakSyncClientAuthGuard,
   ],
   controllers: [ClientsController],
   exports: [CLIENT_REPOSITORY, SyncClientFromKeycloakUseCase],

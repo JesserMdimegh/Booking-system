@@ -9,4 +9,12 @@ export class UpdateProviderDto {
   @IsArray()
   @IsString({ each: true })
   services?: string[];
+
+  @IsOptional()
+  @IsString()
+  phoneNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  address?: string;
 }

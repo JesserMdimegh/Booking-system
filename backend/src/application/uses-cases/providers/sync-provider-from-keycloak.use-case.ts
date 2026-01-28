@@ -5,9 +5,12 @@ import { PROVIDER_REPOSITORY } from '../../../domain/repositories/provider.repos
 
 export interface SyncProviderFromKeycloakDto {
   id: string;
+  keycloakUserId: string;
   email: string;
   name: string;
   services?: string[];
+  phoneNumber?: string;
+  address?: string;
 }
 
 @Injectable()
@@ -23,6 +26,8 @@ export class SyncProviderFromKeycloakUseCase {
       provider.name = data.name;
       provider.email = data.email;
       provider.services = data.services || [];
+      provider.phoneNumber = data.phoneNumber;
+      provider.address = data.address;
       provider.updatedAt = new Date();
       
       return await this.providerRepository.update(provider);
@@ -30,9 +35,12 @@ export class SyncProviderFromKeycloakUseCase {
       // Create new provider
       provider = new Provider(
         data.id,
+        data.keycloakUserId,
         data.email,
         data.name,
-        data.services || []
+        data.services || [],
+        data.phoneNumber || undefined,
+        data.address || undefined
       );
       
       return await this.providerRepository.create(provider);

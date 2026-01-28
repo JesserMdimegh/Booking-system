@@ -1,10 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, Request } from '@nestjs/common';
 import { CreateClientUseCase } from '../../application/uses-cases/clients/create-client.use-case';
 import { GetClientsUseCase } from '../../application/uses-cases/clients/get-clients.use-case';
 import { UpdateClientUseCase } from '../../application/uses-cases/clients/update-client.use-case';
 import { CreateClientDto } from '../../application/dto/create-client.dto';
 import { UpdateClientDto } from '../../application/dto/update-client.dto';
+import { Public } from '../../infrastructure/auth/public.decorator';
+import { KeycloakSyncClientAuthGuard } from '../../infrastructure/auth/keycloak-sync-client-auth.guard';
+import { UseGuards } from '@nestjs/common';
 
+@UseGuards(KeycloakSyncClientAuthGuard)
 @Controller('clients')
 export class ClientsController {
   constructor(
@@ -14,11 +18,17 @@ export class ClientsController {
   ) { }
 
   @Post()
-  async createClient(@Body() data: CreateClientDto) {
-    const client = await this.createClientUseCase.execute(data);
+  async createClient(@Body() data: CreateClientDto, @Request() req: any) {
+    const keycloakUserId = req.user?.userId;
+    if (!keycloakUserId) {
+      throw new NotFoundException('User not authenticated');
+    }
+    
+    const client = await this.createClientUseCase.execute(data, keycloakUserId);
     return { message: 'Client created successfully', data: client };
   }
 
+  @Public()
   @Get()
   async getAllClients() {
     const clients = await this.getClientsUseCase.getAll();
@@ -28,12 +38,28 @@ export class ClientsController {
     return { message: 'Clients retrieved successfully', data: clients };
   }
 
+  @Get('profile')
+  async getCurrentClientProfile(@Request() req: any) {
+    const keycloakUserId = req.user?.userId;
+    if (!keycloakUserId) {
+      throw new NotFoundException('User not authenticated');
+    }
+    
+    const client = await this.getClientsUseCase.findByKeycloakUserId(keycloakUserId);
+    if (!client) {
+      throw new NotFoundException('Client profile not found');
+    }
+    return { message: 'Client profile retrieved successfully', data: client };
+  }
+
+  @Public()
   @Get(':id')
   async getClientById(@Param('id') id: string) {
     const client = await this.getClientsUseCase.getById(id);
     return { message: 'Client retrieved successfully', data: client };
   }
 
+  @Public()
   @Get('email/:email')
   async getClientByEmail(@Param('email') email: string) {
     const client = await this.getClientsUseCase.findByEmail(email);
@@ -62,6 +88,22 @@ export class ClientsController {
   async updateClient(@Param('id') id: string, @Body() data: UpdateClientDto) {
     const client = await this.updateClientUseCase.execute(id, data);
     return { message: 'Client updated successfully', data: client };
+  }
+
+  @Put('profile')
+  async updateCurrentClientProfile(@Request() req: any, @Body() data: Partial<UpdateClientDto>) {
+    const keycloakUserId = req.user?.userId;
+    if (!keycloakUserId) {
+      throw new NotFoundException('User not authenticated');
+    }
+    
+    const client = await this.getClientsUseCase.findByKeycloakUserId(keycloakUserId);
+    if (!client) {
+      throw new NotFoundException('Client profile not found');
+    }
+    
+    const updatedClient = await this.updateClientUseCase.execute(client.id, data);
+    return { message: 'Client profile updated successfully', data: updatedClient };
   }
 
   @Delete(':id')

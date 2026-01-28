@@ -8,42 +8,45 @@ export class PrismaClientRepository implements IClientRepository {
   constructor(private prisma: PrismaService) {}
 
   async create(client: Client): Promise<Client> {
-    const created = await this.prisma.user.create({
+    const created = await this.prisma.client.create({
       data: {
         id: client.id,
+        keycloakUserId: client.keycloakUserId,
         email: client.email,
         name: client.name,
-        role: client.role,
-        phoneNumber: client.phoneNumber,
-        address: client.address,
+        phoneNumber: client.phoneNumber || null,
+        address: client.address || null,
       },
     });
     return this.toDomain(created);
   }
 
   async findById(id: string): Promise<Client | null> {
-    const record = await this.prisma.user.findUnique({
+    const record = await this.prisma.client.findUnique({
       where: { id },
       include: { appointments: true },
     });
-    return record && record.role === 'CLIENT'
-      ? this.toDomain(record)
-      : null;
+    return record ? this.toDomain(record) : null;
   }
 
   async findByEmail(email: string): Promise<Client | null> {
-    const record = await this.prisma.user.findUnique({
+    const record = await this.prisma.client.findUnique({
       where: { email },
       include: { appointments: true },
     });
-    return record && record.role === 'CLIENT'
-      ? this.toDomain(record)
-      : null;
+    return record ? this.toDomain(record) : null;
+  }
+
+  async findByKeycloakUserId(keycloakUserId: string): Promise<Client | null> {
+    const record = await this.prisma.client.findUnique({
+      where: { keycloakUserId },
+      include: { appointments: true },
+    });
+    return record ? this.toDomain(record) : null;
   }
 
   async findAll(): Promise<Client[]> {
-    const records = await this.prisma.user.findMany({
-      where: { role: 'CLIENT' },
+    const records = await this.prisma.client.findMany({
       include: { appointments: true },
       orderBy: { createdAt: 'desc' },
     });
@@ -51,9 +54,8 @@ export class PrismaClientRepository implements IClientRepository {
   }
 
   async findByProvider(providerId: string): Promise<Client[]> {
-    const records = await this.prisma.user.findMany({
+    const records = await this.prisma.client.findMany({
       where: { 
-        role: 'CLIENT',
         appointments: {
           some: {
             slot: {
@@ -69,12 +71,12 @@ export class PrismaClientRepository implements IClientRepository {
   }
 
   async update(client: Client): Promise<Client> {
-    const updated = await this.prisma.user.update({
+    const updated = await this.prisma.client.update({
       where: { id: client.id },
       data: {
         name: client.name,
-        phoneNumber: client.phoneNumber,
-        address: client.address,
+        phoneNumber: client.phoneNumber || null,
+        address: client.address || null,
         updatedAt: new Date(),
       },
       include: { appointments: true },
@@ -83,7 +85,7 @@ export class PrismaClientRepository implements IClientRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await this.prisma.user.delete({
+    await this.prisma.client.delete({
       where: { id },
     });
   }
@@ -91,10 +93,11 @@ export class PrismaClientRepository implements IClientRepository {
   private toDomain(record: any): Client {
     const client = new Client(
       record.id,
+      record.keycloakUserId,
       record.email,
       record.name,
-      record.phoneNumber,
-      record.address,
+      record.phoneNumber || undefined,
+      record.address || undefined,
     );
     client.createdAt = new Date(record.createdAt);
     client.updatedAt = new Date(record.updatedAt);

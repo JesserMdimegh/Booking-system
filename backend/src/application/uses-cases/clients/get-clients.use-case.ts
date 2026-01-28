@@ -31,6 +31,10 @@ export class GetClientsUseCase {
     return client;
   }
 
+  async findByKeycloakUserId(keycloakUserId: string): Promise<Client | null> {
+    return await this.clientRepository.findByKeycloakUserId(keycloakUserId);
+  }
+
   async getClientAppointments(clientId: string): Promise<any[]> {
     // This would need to be implemented by injecting appointment repository
     // For now, return empty array as placeholder

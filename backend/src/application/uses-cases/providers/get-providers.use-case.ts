@@ -14,7 +14,7 @@ export class GetProvidersUseCase {
   async getById(id: string): Promise<Provider> {
     const provider = await this.providerRepository.findById(id);
     if (!provider) {
-      throw new NotFoundException('Provider not found');
+      throw new NotFoundException('Provider not found by id');
     }
     return provider;
   }
@@ -26,9 +26,13 @@ export class GetProvidersUseCase {
   async findByEmail(email: string): Promise<Provider> {
     const provider = await this.providerRepository.findByEmail(email);
     if (!provider) {
-      throw new NotFoundException('Provider not found');
+      throw new NotFoundException('Provider not found by email');
     }
     return provider;
+  }
+
+  async findByKeycloakUserId(keycloakUserId: string): Promise<Provider | null> {
+    return await this.providerRepository.findByKeycloakUserId(keycloakUserId);
   }
 
   async getProviderAppointments(providerId: string): Promise<any[]> {

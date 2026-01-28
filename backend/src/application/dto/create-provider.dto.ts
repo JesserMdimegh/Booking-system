@@ -2,15 +2,21 @@ import { IsEmail, IsString, IsOptional, IsArray, IsNotEmpty } from 'class-valida
 
 export class CreateProviderDto {
   @IsEmail()
-  @IsNotEmpty()
   email: string;
 
   @IsString()
-  @IsNotEmpty()
   name: string;
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   services?: string[];
+
+  @IsOptional()
+  @IsString()
+  phoneNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  address?: string;
 }

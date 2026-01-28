@@ -30,4 +30,28 @@ export class UpdateProviderUseCase {
     }
     await this.providerRepository.delete(id);
   }
+
+  async addService(id: string, service: string): Promise<Provider> {
+    const provider = await this.providerRepository.findById(id);
+    if (!provider) {
+      throw new NotFoundException('Provider not found');
+    }
+
+    provider.addService(service);
+    provider.updatedAt = new Date();
+
+    return await this.providerRepository.update(provider);
+  }
+
+  async removeService(id: string, service: string): Promise<Provider> {
+    const provider = await this.providerRepository.findById(id);
+    if (!provider) {
+      throw new NotFoundException('Provider not found');
+    }
+
+    provider.removeService(service);
+    provider.updatedAt = new Date();
+
+    return await this.providerRepository.update(provider);
+  }
 }

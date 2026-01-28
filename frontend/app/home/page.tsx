@@ -32,10 +32,10 @@ export default function Home() {
       // Extract username from email (before @)
       const username = session.user.email.split('@')[0];
       
-      // Assign role via Keycloak API
-      await usersApi.assignRole(username, selectedRole);
+      // Assign role via Keycloak API with enhanced profile creation
+      const result = await usersApi.assignRole(username, selectedRole === 'Client' ? 'Client' : 'Provider');
       
-      setSuccess(`Successfully assigned ${selectedRole} role! Redirecting to dashboard...`);
+      setSuccess(`Successfully assigned ${selectedRole} role! Business profile created. Redirecting to dashboard...`);
       
       // Wait a moment to show success message, then redirect
       setTimeout(() => {

@@ -66,23 +66,30 @@ export default function ProviderHome() {
         throw new Error('User session data is incomplete');
       }
 
+      // Use JWT-based profile endpoint instead of email lookup
       const [providerResponse] = await Promise.all([
-        providersApi.getProviderByEmail(session.user.email)
+        providersApi.getProfile()
       ]);
 
       setProviderData(providerResponse.data);
 
-      // Use the provider's database ID for appointments
+      // Use the provider's database ID for appointments, slots, and clients
       if (providerResponse.data.id) {
-        const [appointmentsResponse, slotsResponse, clientsResponse] = await Promise.all([
+        const [appointmentsResponse, slotsResponse] = await Promise.all([
           appointmentsApi.getAppointmentsByProvider(providerResponse.data.id),
-          slotsApi.getSlotsByProvider(providerResponse.data.id),
-          clientsApi.getClientsByProvider(providerResponse.data.id)
+          slotsApi.getSlotsByProvider(providerResponse.data.id)
         ]);
 
         setAppointments(appointmentsResponse.data);
         setSlots(slotsResponse.data);
-        setClients(clientsResponse.data);
+        
+        // Note: getClientsByProvider endpoint was removed in new architecture
+        // Clients are now accessed through appointments
+        const clientIds = [...new Set(appointmentsResponse.data.map((apt: Appointment) => apt.clientId))];
+        const clientDetails = await Promise.all(
+          clientIds.map(clientId => clientsApi.getClientById(clientId))
+        );
+        setClients(clientDetails.map(response => response.data));
       }
     } catch (err) {
       console.error('Failed to fetch provider data:', err);
@@ -287,13 +294,7 @@ export default function ProviderHome() {
             >
               View All Appointments
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => router.push('/Provider/profile')}
-              className="w-full"
-            >
-              Edit Profile
-            </Button>
+            
           </div>
         </Card>
 

@@ -9,7 +9,7 @@ import { v4 as uuid } from 'uuid';
 export class CreateClientUseCase {
   constructor(@Inject(CLIENT_REPOSITORY) private clientRepository: IClientRepository) {}
 
-  async execute(data: CreateClientDto): Promise<Client> {
+  async execute(data: CreateClientDto, keycloakUserId: string): Promise<Client> {
     const existingClient = await this.clientRepository.findByEmail(data.email);
     if (existingClient) {
       throw new ConflictException('Client with this email already exists');
@@ -17,10 +17,11 @@ export class CreateClientUseCase {
 
     const client = new Client(
       uuid(),
+      keycloakUserId, // Use provided keycloakUserId
       data.email,
       data.name,
-      data.phoneNumber,
-      data.address
+      data.phoneNumber || undefined,
+      data.address || undefined
     );
 
     return await this.clientRepository.create(client);
