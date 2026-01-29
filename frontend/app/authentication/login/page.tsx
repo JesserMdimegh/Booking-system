@@ -103,7 +103,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <div className="text-center text-sm text-gray-500">
-          <p>© 2024 Booking System. All rights reserved.</p>
+          <p>© 2026 Booking System. All rights reserved By Djass.</p>
         </div>
       </div>
     </div>

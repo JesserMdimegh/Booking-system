@@ -1,12 +1,14 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useSession, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
+  console.log("sesss after resfr:",session);
   const router = useRouter();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     // If not authenticated, redirect to login
@@ -18,6 +20,21 @@ export default function DashboardPage() {
     // If still loading, don't do anything yet
     if (status === 'loading') {
       return;
+    }
+
+    // If authenticated but no roles found, try to refresh session once
+    if (status === 'authenticated' && session && (!session.roles || session.roles.length === 0)) {
+      if (!isRefreshing) {
+        console.log('No roles found, refreshing session...');
+        setIsRefreshing(true);
+        
+        // Force session refresh
+        getSession().then(() => {
+          console.log('Session refreshed');
+          setIsRefreshing(false);
+        });
+        return;
+      }
     }
 
     // If authenticated, check roles and redirect to appropriate home page
@@ -38,7 +55,7 @@ export default function DashboardPage() {
         router.push('/home');
       }
     }
-  }, [session, status, router]);
+  }, [session, status, router, isRefreshing]);
 
   // Show loading state while checking authentication
   if (status === 'loading') {

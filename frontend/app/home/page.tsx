@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession, signOut } from "next-auth/react";
+import { useSession, signOut, getSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { logout } from "../authentication/logout";
@@ -35,12 +35,39 @@ export default function Home() {
       // Assign role via Keycloak API with enhanced profile creation
       const result = await usersApi.assignRole(username, selectedRole === 'Client' ? 'Client' : 'Provider');
       
-      setSuccess(`Successfully assigned ${selectedRole} role! Business profile created. Redirecting to dashboard...`);
+      setSuccess(`Successfully assigned ${selectedRole} role! Business profile created. Refreshing token...`);
       
-      // Wait a moment to show success message, then redirect
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 2000);
+      // Wait for backend to sync
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Step 1: Force complete token refresh from Keycloak
+      console.log('Forcing token refresh from Keycloak...');
+      
+      // Clear ALL NextAuth storage to force fresh authentication
+      if (typeof window !== 'undefined') {
+        // Clear session storage
+        sessionStorage.clear();
+        
+        // Clear all local storage items
+        localStorage.clear();
+        
+        // Also clear cookies by setting them to expire
+        document.cookie.split(";").forEach(function(c) { 
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+      }
+      
+      setSuccess(`Token refreshed! Redirecting to get fresh session...`);
+      
+      // Step 2: Force fresh authentication using NextAuth signIn
+      // This will handle the proper redirect flow without 404 errors
+      console.log('Redirecting for fresh authentication flow...');
+      
+      // Use signIn to properly redirect to Keycloak and back to dashboard
+      await signIn('keycloak', {
+        callbackUrl: '/dashboard',
+        redirect: true,
+      });
       
     } catch (err) {
       console.error('Role assignment error:', err);

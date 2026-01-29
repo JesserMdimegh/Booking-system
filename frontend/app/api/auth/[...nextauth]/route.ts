@@ -3,6 +3,39 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import KeycloakProvider from "next-auth/providers/keycloak";
 import { JWT } from "next-auth/jwt";
 
+async function syncUserToDatabase(userInfo: any, roles: string[]) {
+  try {
+    // Determine user type based on roles
+    const isClient = roles.includes('Client') || roles.includes('client');
+    const isProvider = roles.includes('Provider') || roles.includes('provider');
+    
+    if (isClient || isProvider) {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/keycloak/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: userInfo.preferred_username || userInfo.email.split('@')[0],
+          email: userInfo.email,
+          password: 'auto-generated', // This won't be used for Keycloak users
+          userType: isClient ? 'client' : 'provider',
+          services: isProvider ? [] : undefined,
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to sync user to database:', errorData);
+      } else {
+        console.log(`User ${userInfo.email} synced to database as ${isClient ? 'client' : 'provider'}`);
+      }
+    }
+  } catch (error) {
+    console.error('Error syncing user to database:', error);
+  }
+}
+
 async function refreshAccessToken(token: JWT) {
   try {
     const response = await fetch(
@@ -89,6 +122,19 @@ export const authOptions: NextAuthOptions = {
           console.log("JWT Callback - Initial login:");
           console.log("Roles:", token.roles);
           console.log("Client Roles:", token.clientRoles);
+          
+          // Sync user to database if they have roles
+          const allRoles = [...(token.roles || []), ...(token.clientRoles || [])];
+          if (allRoles.length > 0) {
+            // Use setTimeout to avoid blocking the JWT callback
+            setTimeout(() => {
+              syncUserToDatabase({
+                sub: decodedToken.sub,
+                email: decodedToken.email,
+                preferred_username: decodedToken.preferred_username,
+              }, allRoles);
+            }, 0);
+          }
         }
         
         return token;
